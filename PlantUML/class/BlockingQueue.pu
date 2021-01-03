@@ -1,0 +1,85 @@
+```
+@startuml
+Title "BlockingQueue类图"
+interface BlockingQueue<E>
+interface Iterator<E>
+interface Collection<E>
+interface Queue<E>
+abstract class AbstractQueue<E>
+abstract class AbstractCollection<E>
+class ArrayBlockingQueue<E>
+class SynchronousQueue<E>
+class LinkedBlockingQueue<E>
+class Serializable
+
+Queue<|--BlockingQueue
+BlockingQueue <|.. ArrayBlockingQueue
+BlockingQueue <|.. SynchronousQueue
+BlockingQueue <|.. LinkedBlockingQueue
+Iterator<|--Collection
+Collection<|--Queue
+Collection<|..AbstractCollection
+Queue<|..AbstractQueue
+AbstractCollection<|--AbstractQueue
+AbstractQueue <|-- ArrayBlockingQueue
+AbstractQueue <|-- SynchronousQueue
+AbstractQueue <|-- LinkedBlockingQueue
+Serializable <|.. ArrayBlockingQueue
+Serializable <|.. SynchronousQueue
+Serializable <|.. LinkedBlockingQueue
+
+interface BlockingQueue<E>{
++ put(E e):void
++ offer(E e, long timeout, TimeUnit unit)
++ take():E
++ poll(long timeout, TimeUnit unit):E
++ remainingCapacity():int
++ drainTo(Collection<? super E> c):int
++ drainTo(Collection<? super E> c, int maxElements):int
+}
+abstract class AbstractQueue<E>{
+
+}
+
+class ArrayBlockingQueue<E>{
+}
+
+interface Iterator<E>{
++ hasNext():boolean
++ next():E
++ remove():void
++ forEachRemaining(Consumer<? super E> action) void
+}
+
+interface Collection<E>{
++ size():int
++ isEmpty(): boolean
++ contains(Object o):boolean
++ iterator():Iterator<E>
++ toArray(): Object[]
++ toArray(T[] a):T[]
++ add(E e):boolean
++ remove(Object o):boolean
++ containsAll(Collection<?> c): boolean
++ addAll(Collection<? extends E> c): boolean
++ removeAll(Collection<?> c): boolean
++ removeIf(Predicate<? super E> filter):boolean
++ retainAll(Collection<?> c): boolean
++ clear():void
++ spliterator():Spliterator<E>
++ stream():Stream<E>
++ parallelStream(): Stream<E>
+}
+
+interface Queue<E>{
++ offer(E e):boolean
++ remove(): E
++ poll(): E
++ element(): E
++ peek(): E
+}
+
+abstract class AbstractCollection<E>{
+}
+@enduml
+```

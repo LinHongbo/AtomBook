@@ -1,0 +1,35 @@
+@startuml
+Title "MediaPlayerService类图"
+abstract class RefBase
+abstract class BpRefBase
+abstract class IBinder
+abstract class BBinder
+abstract class BpBinder
+
+
+abstract class IInterface
+abstract class BnInterface
+abstract class BpInterface
+
+abstract class IMediaPlayerService
+abstract class BnMediaPlayerService
+abstract class BpMediaPlayerService
+class MediaPlayerService
+
+RefBase <|-- IBinder
+RefBase <|-- BpRefBase
+IBinder <|-- BBinder
+IBinder <|-- BpBinder
+
+RefBase <|-- IInterface
+IInterface <|-- BnInterface
+BBinder <|-- BnInterface
+IInterface <|-- BpInterface
+BpRefBase <|-- BpInterface
+
+IInterface <|-- IMediaPlayerService
+BnInterface <|-- BnMediaPlayerService
+BpInterface <|-- BpMediaPlayerService
+BnMediaPlayerService <|-- MediaPlayerService
+BnMediaPlayerService --> MediaPlayerService
+@enduml

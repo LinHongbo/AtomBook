@@ -1,0 +1,57 @@
+@startuml
+用户->>InputEventReceiver: 用户触摸
+InputEventReceiver->>ViewRootImpl:dispatchInputEvent()
+ViewRootImpl->>DecorView:processPointEvent()
+alt 满足回调存在，并且 window 对象未销毁条件
+    opt dispatchTouchEvent()
+        DecorView->>Activity:mWindow.getCallback()
+        opt dispatchTouchEvent()
+            Activity->>PhoneWindow: getWindow()
+            opt superDisPatchTouchEvent()
+                PhoneWindow->> DecorView: superDisPatchTouchEvent()
+                DecorView->> ViewGroup: super.dispatchTouchEvent()
+                opt dispatchTouchEvent()
+                    alt onInterceptTouchEvent() == true
+                        Note left of View: 拦截事件，调用自身处理事件
+                        ViewGroup->>View: super.dispatchTouchEvent()
+                        View->> View: li.mOnTouchListener.onTouch()
+                        View->> View: onTouchEvent()
+                        View-->> ViewGroup: 返回 result
+                    else onInterceptTouchEvent() == false
+                        ViewGroup->>View: child.dispatchTouchEvent()
+                        View->> View: li.mOnTouchListener.onTouch()
+                        View->> View: onTouchEvent()
+                        View-->> ViewGroup: 返回 result
+                        alt result == true
+                            Note left of View: 事件已经被消费，无需处理
+                            ViewGroup-->> ViewGroup: 返回 result
+                        else result == false
+                            Note left of View: 事件未被消费，需要 ViewGroup 自身处理触摸事件
+                            ViewGroup->>View: super.dispatchTouchEvent()
+                            View->> View: li.mOnTouchListener.onTouch()
+                            View->> View: onTouchEvent()
+                            View-->> ViewGroup: 返回 result
+                       end
+                    end
+                end
+                ViewGroup-->>DecorView: 返回 result
+                DecorView-->>PhoneWindow: 返回 result
+                PhoneWindow-->>Activity: 返回 result
+            end
+            alt result == true
+            note left of Activity: 直接返回 true
+            else result == false
+                Activity->>Activity: onTouchEvent()
+            end
+            Activity-->>DecorView:返回 result
+        end
+        DecorView-->> ViewRootImpl: 返回 result
+    end
+    ViewRootImpl-->>ViewRootImpl: 返回 result
+else 不满足
+    DecorView->> DecorView: 自己处理触摸事件
+    DecorView-->>ViewRootImpl:返回 result
+end
+ViewRootImpl-->>InputEventReceiver:返回 result
+InputEventReceiver-->>用户: 结束触摸流程
+@enduml

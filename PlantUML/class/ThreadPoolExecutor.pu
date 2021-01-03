@@ -1,0 +1,63 @@
+```
+@startuml
+Title "ThreadPoolExecutor类图"
+interface Executor
+interface ExecutorService
+abstract class AbstractExecutorService
+class ThreadPoolExecutor
+Executor<|-- ExecutorService
+ExecutorService<|.. AbstractExecutorService
+AbstractExecutorService<|-- ThreadPoolExecutor
+interface Executor{
++ execute(Runable command) : void
+}
+interface ExecutorService{
++ shutdown() : void
++ shutdownNow() : List<Runnable>
++ isShutdown() : boolean
++ isTerminated() : boolean
++ awaitTermination(long timeout, TimeUnit unit) : boolean
++ submit(Callable<T> task) : Future<T>
++ submit(Runnable task, T result) : Future<T>
++ submit(Runnable task) : Future<?>
++ invokeAll(Collection<? extends Callable<T> tasks>) : List<Future<T>>
++ invokeAll(Collection<? extends Callable> tasks, long timeout, TimeUnit unit) : List<Future<T>>
++ invokeAny(Collection<? extends Callable<T>> tasks) : T
++ invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) : T
+}
+
+abstract class AbstractExecutorService{
+# newTaskFor(Runnable runnable, T value) : RunnableFuture<T>
+# newTaskFor(Callable<T> callable) : RunnbaleFuture<T>
+}
+
+class ThreadPoolExecutor{
++ isTerminating() : boolean
++ setThreadFactory(ThreadFactory threadFactory) : void
++ getThreadFactory() : ThreadFactory
++ setRejectedExecutionHandler(RejectedExecutionHandler handler)
++ getRejectedExecutionHandler() : RejectedExecutionHandler
++ setCorePoolSize(int corePoolSize) : void
++ getCorePoolSize() : int
++ prestartCoreThread() : boolean
++ prestartAllCoreThreads() : int
++ allowsCoreThreadTimeOut() : boolean
++ allowCoreThreadTimeOut(boolean value) : boolean
++ setMaximumPoolSize(int maximumPoolSize) : void
++ getMaximumPoolSize() : int
++ setKeepAliveTime(long time, TimeUnit unit) : void
++ getKeepAliveTime(TimeUnit unit)
++ getQueue() : BlockingQueue<Runnable>
++ remove(Runnable task) : boolean
++ purge() : void
++ getPoolSize() : int
++ getActiveCount() : int
++ getLargestPoolSize() : int
++ getTaskCount() : long
++ getCompletedTaskCount() : long
+# beforeExecute(Thread t, Runnable r) : void
+# afterExecute(Runnable r, Throwable t) : void
+# terminated() : void
+}
+@enduml
+```

@@ -1,0 +1,36 @@
+```
+@startuml
+Title "FutureTask 类图"
+interface Future<V>
+interface Runnable
+interface RunnableFuture<V>
+class FutureTask<V>
+Future <|-- RunnableFuture
+Runnable <|-- RunnableFuture
+RunnableFuture <|-- FutureTask
+
+interface Future<V>{
++ cancel(boolean mayInterrupt):boolean
++ isCancelled():boolean
++ isDone():boolean
++ get():V
++ get(long timeout, TimeUnit unit):V
+}
+
+interface Runnable{
++ run() : void
+}
+
+class FutureTask<V>{
+- report(int s) : V
+# done() : void
+# set(V v) : void
+# setException(Throwable t) : void
+# runAndReset() : boolean
+- handlePossibleCancellationInterrupt(int s) : void
+- finishCompletion() : void
+- awaitDone(boolean, timed, long nanos): int
+- removeWaiter(WaitNode node) : void
+}
+@enduml
+```

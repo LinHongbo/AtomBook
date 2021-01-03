@@ -1,0 +1,36 @@
+@startuml
+opt computeScroll()
+    note right of ViewPager: 平滑滚动的逻辑
+    ViewPager->>Scroller: isFinish()
+    Scroller-->>ViewPager: isFinish
+    ViewPager->>Scroller: computeScrollOffset()
+    Scroller-->>ViewPager: isComputeScrollOffset
+
+    alt !isFinish && isComputeScrollOffset
+        ViewPager->>View: scrollTo()
+        opt pageScrolled(x)
+            alt mItem.size() == 0
+                ViewPager->> ViewPager: onPageScrolled(0, 0, 0)
+            else mItem.size() != 0
+                ViewPager->> ViewPager: onPageScrolled()
+            end
+            opt onPageScrolled(currentPage, pageOffset, offsetPixels)
+                ViewPager->> ViewPager: 调整下DecorView的位置
+                ViewPager->> ViewPager: dispatchOnPageScrolled(position, offset, offsetPixels)
+                note right of ViewPager: item 进行滚动时的动画
+                ViewPager->> PageTransformer: transformPage(child, transformPos)
+            end
+        end
+        ViewPager-->>ViewPager: isPageScroll
+        opt !isPageScroll
+            ViewPager->> Scroller: abortAnimation()
+            ViewPager->> View: scrollTo(0, currentY)
+        end
+        ViewPager->>ViewCompat:postInvalidateOnAnimation()
+    else isFinish || !isComputeScrollOffset()
+        opt completeScroll(true)
+            ViewPager->> ViewPager: 滚动填充，结束滚动
+        end
+    end
+end
+@enduml

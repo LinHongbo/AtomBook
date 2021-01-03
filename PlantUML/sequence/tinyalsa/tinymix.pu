@@ -1,0 +1,73 @@
+@startuml
+participant main
+participant mixer_open
+participant tinymix_list_controls
+participant mixer_ctl_get_elem_info
+participant tinymix_detail_control
+participant mixer_ctl_get_value
+participant tinymix_set_value
+participant mixer_ctl_set_value
+participant mixer_close
+participant 内核
+
+main->>main:1.解析命令行参数
+main->>mixer_open:2.打开混音器节点
+opt mixer_open
+    mixer_open->>mixer_open:2_1.打开混音器节点
+        note right of mixer_open:节点一般为/dev/snd/ControlCx
+    opt 打开混音器成功
+        mixer_open->>内核:2_2.SNDRV_CTL_IOCTL_ELEM_LIST
+            note right of mixer_open:获取混音器特性列表，snd_ctl_elem_list，第1次是只能获取到特性个数
+        mixer_open->>内核:2_3.SNDRV_CTL_IOCTL_CARD_INFO
+            note right of mixer_open:获取混音器特性列表，snd_ctl_card_info
+        mixer_open->>内核:2_4.SNDRV_CTL_IOCTL_ELEM_LIST
+            note right of mixer_open:为snd_ctl_elem_list.pids字段开辟空间后第2次获取，实质为初始化snd_ctl_elem_list.pids
+        mixer_open->>mixer_open:2_5.初始化mixer
+            note right of mixer_open:为mixer_ctl、snd_ctl_elem_info开辟空间，并初始化count个节点
+    end
+end
+mixer_open-->>main:3.返回混音器打开结果
+opt 打开成功
+    opt arc == optind
+        main->>tinymix_list_controls:4_1:列出混音器特性
+        tinymix_list_controls->>tinymix_list_controls:4_2打印表格头
+        loop i < 特性个数
+            tinymix_list_controls->>mixer_ctl_get_elem_info:4_2_1.获取特性节点mixer_ctl
+            opt mixer_ctl_get_elem_info
+                opt !mixer_ctl->info_retrieved
+                    mixer_ctl_get_elem_info->>内核:4_2_1_1.SNDRV_CTL_IOCTL_ELEM_INFO
+                    mixer_ctl_get_elem_info->>mixer_ctl_get_elem_info:4_2_1_2.mixer_ctl->info_retrieved = true
+                    note right of mixer_ctl_get_elem_info:info_retrieved标志位可以减少用户/内核空间切换开销
+                end
+                opt mixer_ctl->info->type为枚举 && mixer_ctl->ename没有初始化
+                    mixer_ctl_get_elem_info->>内核:4_2_1_3.SNDRV_CTL_IOCTL_ELEM_INFO
+                        note right of mixer_ctl_get_elem_info:设置numid指明特性，设置item指明枚举index，获取枚举字符串
+                    mixer_ctl_get_elem_info->>mixer_ctl_get_elem_info:4_2_1_4.初始化mixer_ctl->enames
+                end
+            end
+            mixer_ctl_get_elem_info-->>tinymix_list_controls:4_2_2.返回特性节点mixer_ctl
+            tinymix_list_controls->>tinymix_detail_control:4_2_3.获取特性节点的snd_ctl_elem_value并打印
+            opt tinymix_detail_control
+                tinymix_detail_control->>mixer_ctl_get_value:4_2_3_1.根据特性值的type获取control_value
+                mixer_ctl_get_value->>内核:4_2_3_2.SNDRV_CTL_IOCTL_ELEM_READ
+                内核-->>tinymix_detail_control:4_2_3_3.返回snd_ctl_elem_value
+                tinymix_detail_control->>tinymix_detail_control:4_2_3_4.根据不同的type进行不同的打印
+            end
+        end
+    end
+    opt argc == optind + 1
+        main->>tinymix_detail_control:4_2:显示具体特性的描述
+            note left of tinymix_detail_control:见4_1_3
+    end
+    opt argc >= optind + 2
+        main->>tinymix_set_value:4_3.向混音器设置参数，调用功能
+        opt tinymix_set_value
+            tinymix_set_value->>mixer_ctl_set_value:4_3_1.怎么get就怎么set，经过get的流程已经大概知道各个数据结构是干嘛的了，因此省略分析
+            mixer_ctl_set_value->>内核:4_3_2.SNDRV_CTL_IOCTL_ELEM_READ
+            mixer_ctl_set_value->>mixer_ctl_set_value:4_3_3.变更参数
+            mixer_ctl_set_value->>内核:4_3.SNDRV_CTL_IOCTL_ELEM_WRITE
+        end
+    end
+    main->>mixer_close:5.释放混音器资源
+end
+@enduml
